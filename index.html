@@ -34,7 +34,6 @@
 	<div id="app"></div>
 
 	<script type="text/babel">
-		var window_scroll = true;
 		var player = [0,50];
 		level1[0][50] = 2;
 		level2[28][50] = 2;
@@ -214,9 +213,8 @@
 			var player = this.state.player;
 			var player_x = player[1];
 			var player_y = player[0];
-			window_scroll = (window_scroll === true) ? false : true;
 			//modifies window scrolling so that player does not run out of window{
-			if (player_y < (window.innerHeight/40) || player_y > ((window.innerHeight/10)*0.6) || window_scroll) {event.preventDefault()};
+			if (player_y < ((window.innerHeight/10)*0.3) || player_y > ((window.innerHeight/10)*0.6)) {event.preventDefault()};
 			
 			if (event.keyCode === 37) {
 				this.checkMove(player_x-1,player_y)
@@ -272,11 +270,11 @@
 		}
 		componentDidMount() {
 			window.addEventListener('keydown', this.Keys = this.Keys.bind(this));
-			this.fade('message_arrows')
+			this.fade('message_arrows');
 		}
 		render() {
 			return (
-				<div className="container">
+				<div className="container" id="container">
 				<div className="title">Dungeon Crawler</div>
 				<div className="info">
 					<div id="health" className="col-xs-3 info_elem">Health: {this.state.health}</div>
@@ -295,7 +293,8 @@
 					<button className="btn_new" onClick={() => this.reload()}>New Game</button>
 				</div>
 				<div id="message_xp" className="message alert alert-success">Youve gained an experience point. Gain 2 more to go to the next level</div>
-				<table>
+				<table id="table">
+				<tr id="tr1"></tr>
 				{Object.keys(this.state.visible).map((row) => 
 					<tr>	
 					{this.state.visible[row].map((elem) => 
