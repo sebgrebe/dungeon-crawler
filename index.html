@@ -1,0 +1,322 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<title>Dungeon Crawler</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+	
+	<!-- jQuery -->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+
+	<!-- Bootstrap-->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+	<!-- React-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.3.1/react-dom.min.js"></script>
+
+	<!-- CSS Stylesheet-->
+	<link rel="stylesheet" href="dungeon.css" type="text/css">
+
+	<!--Babel compiler-->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.24/browser.js"></script>
+
+	<!--Levels-->
+	<script src="level1.js"></script>
+	<script src="level2.js"></script>
+
+	<!--Font Awesome-->
+	<script src="https://use.fontawesome.com/9ab0b6d75e.js"></script>
+
+</head>
+<body>
+	<div id="app"></div>
+
+	<script type="text/babel">
+		var player = [0,50];
+		level1[0][50] = 2;
+		level2[28][50] = 2;
+		function BlackGrid(width,height) {
+			let grid = new Object();
+			for (let j=0; j < height; j++) {
+				let row = [];
+				for (let i = 0; i < width; i++) {
+					row.push('b');
+				}
+				grid[j] = row;
+			}
+			return grid;
+		};
+		var black_grid = BlackGrid(100,70);
+		//blacks out the part of the grid that player can't see
+		function Visibility(player_x,player_y,grid_current) {
+			var grid_new = BlackGrid(100,70);
+			var view_y_start = (player_y < 5) ? 0 : player_y-5;
+			var view_y_end = (player_y > 64) ? 69 : player_y + 5;
+			var view_x_start = (player_x < 5) ? 0 : player_x-5;
+			var view_x_end = (player_x > 94) ? 99 : player_x + 5;
+			for (var i = view_y_start; i < view_y_end; i++) {
+				for (var j = view_x_start; j < view_x_end; j++) {
+							grid_new[i][j] = grid_current[i][j]
+						}
+					}
+			return grid_new
+		};
+		class Game extends React.Component {
+		constructor(props) {
+				super(props);
+				this.state = {
+					enemy_damages: 0,
+					game_over: false,
+					health: 100,
+					level: level1,
+					level_no: 1,
+					player: player,
+					scroll_stop: true,
+					visible: Visibility(50,0,level1),
+					weapon: ['fist',10],
+					xp: 0,
+				};
+				this.checkEnemyDamages = this.checkEnemyDamages.bind(this);
+				this.checkMove = this.checkMove.bind(this);
+				this.fade = this.fade.bind(this);
+				this.newLevel = this.newLevel.bind(this);
+				this.playerMoves = this.playerMoves.bind(this);
+				this.reload = this.reload.bind(this);
+			}
+		//handles events when enemy is damaged
+		checkEnemyDamages(damage_enemy) {
+			var enemy_damages = this.state.enemy_damages;
+			var xp = this.state.xp;
+			var level_no = this.state.level_no
+			if ((enemy_damages + damage_enemy) > 100) {
+				xp += 1;
+				this.colorChange('xp','purple');
+				if (xp === 1 && level_no === 1) {
+					this.fade('message_xp');
+				}
+				if (xp === 3) {
+					this.newLevel();
+				}
+				enemy_damages = enemy_damages + damage_enemy - 100;
+				this.setState({
+					enemy_damages: enemy_damages,
+					xp: xp
+				})
+			}
+			else {
+				enemy_damages += damage_enemy;
+				this.setState({
+					enemy_damages: enemy_damages
+				})
+			}
+		}
+		//changes color of targeted div for 2 sec
+		colorChange(div_string,color) {
+			console.log(div_string);
+			var div_string_id = document.getElementById(div_string);
+			div_string_id.style['background-color'] = color;
+			window.setTimeout(() => {
+				div_string_id.style['background-color'] = 'black';
+			},2000)
+		}
+		//checks whether player can make proposed moved and what happens to health, weapon, xp and enemies
+		checkMove(x,y) {
+			var level = this.state.level;
+			var player_old = this.state.player;
+			var elem_new = level[y][x];
+			var health = this.state.health;
+			if (elem_new === 1) {}
+			else if (elem_new < 0) {
+				var random = Math.floor(Math.random()*10) - 5;
+				var weapon_power = this.state.weapon[1];
+				var damage_player = random+elem_new;
+				var health_new = health + damage_player;
+				if (health_new < 1) {
+					$('#message_over').fadeTo(2000,1);
+					this.setState({
+						game_over: true,
+					})
+				}
+				else {
+					this.colorChange('health','red');
+					this.setState({
+						health: health_new,
+					});
+					var enemy_value = elem_new + weapon_power;
+					var damage_enemy = enemy_value - elem_new;
+					//enemy dead
+					if (enemy_value > -1) {
+						//add damage done to enemy in last round to enemy_damages
+						damage_enemy = -elem_new;
+						this.checkEnemyDamages(damage_enemy);
+						//old position turns white
+						level[player_old[0]][player_old[1]] = 0;
+						this.setState({
+							level: level
+						})
+						this.playerMoves(x,y);
+					}
+					else {
+						this.checkEnemyDamages(damage_enemy);
+						level[y][x] = enemy_value;
+						this.setState({
+							level: level,
+						})	
+					}
+				}
+			}
+			else {
+				//old position turns white
+				level[player_old[0]][player_old[1]] = 0;
+				this.setState({
+					level: level
+				})
+				if (!(typeof(elem_new) === "string" && elem_new.charAt(0) === 'd')) {
+					this.playerMoves(x,y)
+				}
+				if (elem_new === 3) {
+					this.colorChange('health','green');
+					this.setState({
+						health: health+20
+					});
+				}
+				else if (typeof(elem_new) === "string" && elem_new.charAt(0) === "w") {
+					this.colorChange('weapon','blue');
+					if (elem_new.substr(1,2) === "20") {
+						this.setState({
+							weapon: ['dagger',20]
+						});
+					}
+					else if (elem_new.substr(1,2) === "30") {
+						this.setState({
+							weapon: ['axe',30]
+						});
+					}
+					else if (elem_new.substr(1,2) === "40") {
+						this.setState({
+							weapon: ['gun',40]
+						});
+					}
+				}
+				else if (typeof(elem_new) === "string" && elem_new.charAt(0) === 'd') {
+					var teleport_x = parseInt(elem_new.substr(1,2));
+					var teleport_y = parseInt(elem_new.substr(3,4));
+					this.playerMoves(teleport_x,teleport_y);
+				}  
+			}
+		}
+		//handles pressing of arrow keys
+		Keys(event) {
+			if (this.state.game_over) {return false}
+			var player = this.state.player;
+			var player_x = player[1];
+			var player_y = player[0];
+			//modifies window scrolling so that player does not run out of window
+			if (player_y < (window.innerHeight/40) || player_y > ((window.innerHeight/10)*0.6) ) {event.preventDefault()};
+			if (event.keyCode === 37) {
+				this.checkMove(player_x-1,player_y)
+			}
+			else if (event.keyCode === 38) {
+				this.checkMove(player_x,player_y-1)
+			}
+			else if (event.keyCode === 39) {
+				this.checkMove(player_x+1,player_y)
+			}
+			else if (event.keyCode === 40) {
+				this.checkMove(player_x,player_y+1)
+			}
+		}
+		//lets targetd div fade in for 2 secs and fade out for 2 secs
+		fade(div_string) {
+			$('#'+div_string).fadeTo(2000,1);
+			window.setTimeout(() => {
+				$('#'+div_string).fadeTo(2000,0)},2000)
+		}
+		//handles when player reaches new level or completes game
+		newLevel() {
+			var level = this.state.level;
+			var level_no = this.state.level_no;
+			if (level_no === 1) {
+				level_no += 1;
+				this.setState({
+					level: level2,
+					level_no: level_no,
+					player: [28,50],
+					visible: Visibility(50,28,level2)
+				});
+				this.fade('message_level')
+			}
+			else {
+				$('#message_winning').fadeTo(2000,1);
+			}
+		}
+		//lets player move when possible
+		playerMoves(x,y) {
+			var level = this.state.level;
+			level[y][x] = 2;
+			this.setState({
+				player: [y,x],
+				level: level,
+				visible: Visibility(x,y,level)
+			});
+		}
+		//reloads page
+		reload() {
+			location.reload(true);
+			window.scrollTo(0, 0);
+		}
+		componentDidMount() {
+			window.addEventListener('keydown', this.Keys = this.Keys.bind(this));
+			this.fade('message_arrows')
+		}
+		render() {
+			return (
+				<div className="container">
+				<div className="title">Dungeon Crawler</div>
+				<div className="info">
+					<div id="health" className="col-xs-3 info_elem">Health: {this.state.health}</div>
+					<div id="weapon" className="col-xs-3 info_elem">Weapon: {this.state.weapon[0]}</div>
+					<div className="col-xs-3 info_elem">XP: {this.state.xp}/3</div>
+					<div className="col-xs-3 info_elem">Level: {this.state.level_no}/2</div>
+				</div>
+				<div id="message_level" className="message alert alert-success">Level {this.state.level_no}!</div>
+				<div id="message_winning" className="message alert alert-success">
+					<div>You have completed the game!</div>
+					<button className="btn_new" onClick={() => this.reload()}>New Game</button>
+				</div>
+				<div id="message_arrows" className="message alert alert-warning">Use the arrow keys to move the player</div>
+				<div id="message_over" className="message alert alert-danger">
+					<div>Game Over</div>
+					<button className="btn_new" onClick={() => this.reload()}>New Game</button>
+				</div>
+				<div id="message_xp" className="message alert alert-success">You've gained an experience point. Gain 2 more to go to the next level</div>
+				<table>
+				{Object.keys(this.state.visible).map((row) => 
+					<tr>	
+					{this.state.visible[row].map((elem) => 
+						<td className={"td" + elem.toString()[0]}></td>
+						)}
+					</tr>
+					)}
+				</table>
+				<footer>
+					<div className="col-md-6 footer_text">Created by <a href="https://sebgrebe.github.io/">sebgrebe</a> with <a href="https://facebook.github.io/react/" target="_blank"><img src="reactlogo.png" height="20px" /></a>
+					</div>
+					<div className="col-md-6 footer_text">
+						Source code on <a href="https://github.com/sebgrebe/dungeon-crawler" className="logo_link" target="_blank"><i className="fa fa-github fa-lg"  aria-hidden="true"></i></a>
+					</div>
+				</footer>
+				</div>
+				)
+		}
+	}
+
+//renders RecipeBox
+ReactDOM.render(<Game />, document.getElementById('app'));
+
+</script>
+
+</body>
+</html>
