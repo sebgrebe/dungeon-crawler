@@ -214,7 +214,7 @@
 			var player_x = player[1];
 			var player_y = player[0];
 			//modifies window scrolling so that player does not run out of window{
-			if (player_y < ((window.innerHeight/10)*0.3) || player_y > ((window.innerHeight/10)*0.6)) {event.preventDefault()};
+			if (player_y < ((window.innerHeight/10)*0.4) || player_y > ((window.innerHeight/10)*0.6)) {event.preventDefault()};
 			
 			if (event.keyCode === 37) {
 				this.checkMove(player_x-1,player_y)
