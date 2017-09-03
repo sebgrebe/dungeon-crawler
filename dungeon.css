@@ -71,36 +71,49 @@ td {
 	width: 10px;
 }
 
+/*free space*/
 .td0 {
 	background-color: white;
 }
 
+/*walls*/
 .td1 {
 	background-color: grey;
 }
 
+/*player*/
 .td2 {
 	background-color: purple;
 }
 
+/*health*/
 .td3 {
 	background-color: green;
 }
 
+/*enemy*/
 .td- {
 	background-color: red;
 }
 
+/*weapons*/
 .tdw {
 	background-color: blue;
 }
 
+/*invisible*/
 .tdb {
 	background-color: black;
 }
 
+/*door*/
 .tdd {
 	background-color: yellow;
+}
+
+/*endboss*/
+.tde {
+	background-color: #660000;
 }
 
 .title {
