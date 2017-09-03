@@ -16,6 +16,14 @@
 	color: white;
 }
 
+footer {
+	top: 770px;
+	width: 1000px;
+	position: absolute;
+	left: 50%;
+	margin-left: -500px;
+}
+
 .footer_text {
 	text-align: center;
 	font-size: 16px;
