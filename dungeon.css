@@ -1,3 +1,7 @@
+body {
+	background-color: black;
+}
+
 .container {
 	padding: 0;
 	font-family: gothic;
@@ -17,9 +21,11 @@
 }
 
 footer {
-	top: 770px;
+	top: 800px;
 	width: 1000px;
 	position: absolute;
+	background-color: black;
+	color: white;
 	left: 50%;
 	margin-left: -500px;
 }
@@ -131,9 +137,8 @@ td {
 	color: white;
 	font-size: 30px;
 	font-weight: bold;
-	width: 1000px;
-	left: 50%;
-	margin-left: -500px;
+	left: 0;
+	width: 100%;
 	z-index: 1;
 	text-align: center;
 }
